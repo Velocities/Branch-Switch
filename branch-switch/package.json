@@ -1,40 +1,40 @@
 {
-  "name": "branchTabManager",
-  "displayName": "Branch Tab Manager",
-  "description": "Manages tabs based on Git branches.",
-  "version": "1.0.0",
-  "publisher": "your-name",
-  "engines": {
-      "vscode": "^1.78.0"
-  },
-  "activationEvents": [
-      "onStartupFinished",
-      "onCommand:branchTabManager.saveTabs",
-      "onCommand:branchTabManager.restoreTabs"
-  ],
-  "main": "./extension.js",
-  "contributes": {
-      "commands": [
-          {
-              "command": "branchTabManager.saveTabs",
-              "title": "Save Tabs for Current Branch"
-          },
-          {
-              "command": "branchTabManager.restoreTabs",
-              "title": "Restore Tabs for Current Branch"
-          }
-      ],
-      "configuration": {
-          "type": "object",
-          "title": "Branch Tab Manager",
-          "properties": {
-              "branchTabManager.autoSaveRestore": {
-                  "type": "boolean",
-                  "default": true,
-                  "description": "Automatically save and restore tabs when switching branches."
-              }
-          }
-      }
-  },
-  "dependencies": {}
+    "name": "branchTabManager",
+    "displayName": "Branch Tab Manager",
+    "description": "Manages tabs based on Git branches.",
+    "version": "1.0.0",
+    "publisher": "your-name",
+    "engines": {
+        "vscode": "^1.78.0"
+    },
+    "activationEvents": [
+        "onStartupFinished",
+        "onCommand:branchTabManager.saveTabs",
+        "onCommand:branchTabManager.restoreTabs"
+    ],
+    "main": "./extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "branchTabManager.saveTabs",
+                "title": "Save Tabs for Current Branch"
+            },
+            {
+                "command": "branchTabManager.restoreTabs",
+                "title": "Restore Tabs for Current Branch"
+            }
+        ],
+        "configuration": {
+            "type": "object",
+            "title": "Branch Tab Manager",
+            "properties": {
+                "branchTabManager.autoSaveRestore": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Automatically save and restore tabs when switching branches."
+                }
+            }
+        }
+    },
+    "dependencies": {}
 }
