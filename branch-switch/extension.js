@@ -2,37 +2,6 @@ const vscode = require("vscode");
 
 let currentBranch = null;
 
-/** Handles branch changes. */
-function handleBranchChange() {
-  vscode.window.showInformationMessage("git branch switch detected");
-  const gitExtension = vscode.extensions.getExtension("vscode.git");
-  if (!gitExtension) {
-    console.error("Git extension not found!");
-    return;
-  }
-
-  const gitAPI = gitExtension.exports.getAPI(1);
-  const repos = gitAPI.repositories;
-
-  repos.forEach((repo) => {
-    const branchName = repo.state.HEAD ? repo.state.HEAD.name : "unknown";
-    console.log(`Branch changed to: ${branchName}`);
-
-    // Get the configuration
-    const config = vscode.workspace.getConfiguration("branchTabManager");
-    if (!config) {
-      console.log("config === null");
-    }
-    const autoSaveRestore = config.get("autoSaveRestore", true);
-
-    if (autoSaveRestore) {
-      vscode.commands.executeCommand("workbench.action.closeAllEditors").then(() => {
-        restoreBranchTabs(branchName);
-      });
-    }
-  });
-}
-
 /** Restores the tabs for the given branch. */
 async function restoreBranchTabs(context, branchName) {
   if (!context.globalState) return;
@@ -40,10 +9,8 @@ async function restoreBranchTabs(context, branchName) {
   const branchTabMap = context.globalState.get("branchTabMap", {});
   const savedTabs = branchTabMap[branchName] || [];
 
-  console.log("Length of savedTabs for restore: " + savedTabs.length);
-
   if (savedTabs.length === 0) {
-      console.log(`No saved tabs found for branch: ${branchName}`);
+      vscode.window.showInformationMessage(`No saved tabs found for branch: ${branchName}`);
       return;
   }
 
@@ -108,9 +75,7 @@ function activate(context) {
       gitAPI.repositories.forEach((repo) => {
         vscode.window.showInformationMessage("in a repo: " + repo);
         repo.state.onDidChange(() => {
-          //vscode.window.showInformationMessage("git state changed!!!");
           const branchName = repo.state.HEAD ? repo.state.HEAD.name : "unknown";
-          //vscode.window.showInformationMessage(branchName);
           if (currentBranch != branchName) {
             saveBranchTabs(context, currentBranch);
             currentBranch = branchName;
@@ -121,7 +86,7 @@ function activate(context) {
     } else {
         console.warn('No repositories found.');
     }
-  }, 1000);  // Adjust time as needed
+  }, 1000);
 
   if (!gitExtension) {
     console.error("Git extension not found!");
