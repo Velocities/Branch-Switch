@@ -1,3 +1,3 @@
 branch-switch/node_modules/*
 branch-switch/.vscode
-branch-switch/.vsix
+*.vsix
