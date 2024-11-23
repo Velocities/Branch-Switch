@@ -1,20 +1,14 @@
 # branch-switch README
 
-This is the README for your extension "branch-switch". After writing up a brief description, we recommend including the following sections.
+This VSCode extension lets you save your tabs as you switch
+branches in git, allowing you to pick up right where you left off 
+when returning to any particular branch!
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+By default, this extension automatically saves your tabs for a branch
+when you switch off from it and it will automatically open those tabs
+when you switch back to it.
 
 ## Extension Settings
 
