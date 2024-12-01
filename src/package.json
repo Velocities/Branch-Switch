@@ -3,7 +3,7 @@
     "displayName": "Branch Tab Manager",
     "description": "Manages tabs based on Git branches.",
     "version": "1.0.0",
-    "publisher": "your-name",
+    "publisher": "Velocities",
     "engines": {
         "vscode": "^1.78.0"
     },
