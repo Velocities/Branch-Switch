@@ -31,15 +31,12 @@ Users appreciate release notes as you update your extension.
 
 ### 1.0.0
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
+Initial release of Branch Switch with basic functionality detailed in Features.
 
 ### 1.1.0
 
-Added features X, Y, and Z.
+Renamed extension to branchSwitch in proper places and removed old test logging
+and window information messages.
 
 ---
 

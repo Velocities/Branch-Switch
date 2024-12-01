@@ -2,6 +2,7 @@
     "name": "branchSwitch",
     "displayName": "Branch Switch",
     "description": "Manages tabs based on Git branches.",
+    "icon" : "logo.png",
     "version": "1.1.0",
     "publisher": "Velocities",
     "engines": {
