@@ -1,34 +1,34 @@
 {
-    "name": "branchTabManager",
-    "displayName": "Branch Tab Manager",
+    "name": "branchSwitch",
+    "displayName": "Branch Switch",
     "description": "Manages tabs based on Git branches.",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "publisher": "Velocities",
     "engines": {
         "vscode": "^1.78.0"
     },
     "activationEvents": [
         "onStartupFinished",
-        "onCommand:branchTabManager.saveTabs",
-        "onCommand:branchTabManager.restoreTabs"
+        "onCommand:branchSwitch.saveTabs",
+        "onCommand:branchSwitch.restoreTabs"
     ],
     "main": "./extension.js",
     "contributes": {
         "commands": [
             {
-                "command": "branchTabManager.saveTabs",
+                "command": "branchSwitch.saveTabs",
                 "title": "Save Tabs for Current Branch"
             },
             {
-                "command": "branchTabManager.restoreTabs",
+                "command": "branchSwitch.restoreTabs",
                 "title": "Restore Tabs for Current Branch"
             }
         ],
         "configuration": {
             "type": "object",
-            "title": "Branch Tab Manager",
+            "title": "Branch Switch",
             "properties": {
-                "branchTabManager.autoSaveRestore": {
+                "branchSwitch.autoSaveRestore": {
                     "type": "boolean",
                     "default": true,
                     "description": "Automatically save and restore tabs when switching branches."

@@ -55,7 +55,7 @@ function saveBranchTabs(context, branchName) {
 
 /** Activates the extension. */
 function activate(context) {
-  console.log("BranchTabManager extension is now active!");
+  console.log("Branch Switch extension is now active!");
 
   const gitExtension = vscode.extensions.getExtension("vscode.git");
   const gitAPI = gitExtension.exports.getAPI(1); 
@@ -67,13 +67,10 @@ function activate(context) {
     if (gitAPI.repositories.length > 0) {
       clearInterval(intervalId);
       const repo = gitAPI.repositories[0];
-      vscode.window.showInformationMessage("In a repo: " + repo.rootUri.path);
       currentBranch = repo.state.HEAD?.name;
-      console.log("Current branch:", currentBranch);
 
       // Now set the listeners
       gitAPI.repositories.forEach((repo) => {
-        vscode.window.showInformationMessage("in a repo: " + repo);
         repo.state.onDidChange(() => {
           const branchName = repo.state.HEAD ? repo.state.HEAD.name : "unknown";
           if (currentBranch != branchName) {
@@ -94,14 +91,14 @@ function activate(context) {
   }
 
   // Register a manual save command
-  const saveCommand = vscode.commands.registerCommand("branchTabManager.saveTabs", () => {
+  const saveCommand = vscode.commands.registerCommand("branchSwitch.saveTabs", () => {
     const branchName = gitAPI.repositories[0]?.state.HEAD?.name || "unknown";
     saveBranchTabs(context, branchName);
   });
   context.subscriptions.push(saveCommand);
 
   // Register a manual restore command
-  const restoreCommand = vscode.commands.registerCommand("branchTabManager.restoreTabs", () => {
+  const restoreCommand = vscode.commands.registerCommand("branchSwitch.restoreTabs", () => {
     const branchName = gitAPI.repositories[0]?.state.HEAD?.name || "unknown";
     restoreBranchTabs(context, branchName);
   });
