@@ -60,7 +60,9 @@ class TabManager {
             await vscode.workspace.openTextDocument(file.path).then(doc => {
                 // "preview: false" makes the tab open without italicizing (i.e. stay open when opening more tabs)
                 vscode.window.showTextDocument(doc, { preview: false }).then(editor => {
-                    editor.selection = new vscode.Selection(file.cursorPosition, file.cursorPosition);
+                    // This currently moves the cursor to the correct line but not to the exact column
+                    const cursorPosition = new vscode.Position(file.cursorPosition, 0);
+                    editor.selection = new vscode.Selection(cursorPosition, cursorPosition);
                 });
             });
         }
