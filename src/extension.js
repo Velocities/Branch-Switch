@@ -6,7 +6,6 @@ const fs = require('fs');
 
 let repository = null;
 let tabManager = null;
-let currentBranch = null;
 
 /** Activates the extension. */
 async function activate(context) {
@@ -49,8 +48,7 @@ async function activate(context) {
       clearInterval(intervalId);
 
       const repo = gitAPI.repositories[0];
-      currentBranch = repo.state.HEAD?.name;
-      tabManager.currentBranch = currentBranch;
+      tabManager.currentBranch = repo.state.HEAD?.name;
 
       // Set listeners for branch changes
       gitAPI.repositories.forEach((repo) => {
