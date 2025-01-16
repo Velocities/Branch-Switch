@@ -50,6 +50,7 @@ async function activate(context) {
 
       const repo = gitAPI.repositories[0];
       currentBranch = repo.state.HEAD?.name;
+      tabManager.currentBranch = currentBranch;
 
       // Set listeners for branch changes
       gitAPI.repositories.forEach((repo) => {
