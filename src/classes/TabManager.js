@@ -39,9 +39,9 @@ class TabManager {
     /**
      * Saves state of branch to persistent storage location.
      * @param {string} branchName 
-     * @param {Array} openTabs 
      */
-    async saveState(branchName, openTabs) {
+    async saveState(branchName) {
+        let openTabs = this.getOpenTabs();
         const files = openTabs.map(tab => new File(tab.path, tab.cursorPosition, tab.pinned));
         await this.repository.saveBranch(branchName, files);
     }

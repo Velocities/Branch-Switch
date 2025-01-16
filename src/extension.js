@@ -68,7 +68,7 @@ async function activate(context) {
   context.subscriptions.push(
     vscode.commands.registerCommand("branchSwitch.saveTabs", async () => {
       const branchName = gitAPI.repositories[0]?.state.HEAD?.name || "unknown";
-      await tabManager.saveState(branchName, getOpenTabs());
+      await tabManager.saveState(branchName);
     })
   );
 
@@ -87,27 +87,6 @@ async function deactivate() {
     await repository.saveAllBranches();
     await repository.saveRepositoryMetadata();
   }
-}
-
-/** Get the currently open tabs. */
-function getOpenTabs() {
-  return vscode.window.tabGroups.all.flatMap((group) =>
-    group.tabs
-      .filter((tab) => tab.input && tab.input.uri) // Only include valid file tabs
-      .map((tab) => ({
-        path: tab.input.uri.fsPath,
-        cursorPosition: getCursorPosition(tab),
-        pinned: tab.isPinned || false,
-      }))
-  );
-}
-
-/** Get the cursor position for a tab. */
-function getCursorPosition(tab) {
-  const editor = vscode.window.visibleTextEditors.find(
-    (e) => e.document.uri.fsPath === tab.input.uri.fsPath
-  );
-  return editor ? editor.selection.active.line : 0;
 }
 
 module.exports = {
