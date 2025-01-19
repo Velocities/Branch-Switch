@@ -27,14 +27,14 @@ class Repository {
     /**
      * Save information about {@link Branch} to persistent storage.
      * @param {string} name 
-     * @param {Array} files 
+     * @param {Array} fileTabs 
      */
-    async saveBranch(name, files) {
+    async saveBranch(name, fileTabs) {
         // Get the Branch object from the string -> Branch map for this repo
         const branch = await this.getBranch(name);
 
-        // Set File[] (array of files) to what we're given
-        branch.files = files;
+        // Set FileTab[] (array of file tabs) to what we're given
+        branch.fileTabs = fileTabs;
 
         // Now call Branch object's save method
         await branch.save(this.storageDir);

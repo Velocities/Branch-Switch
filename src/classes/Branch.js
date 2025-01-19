@@ -1,6 +1,6 @@
 const fs = require('fs/promises');
 const path = require('path');
-const File = require('./File'); // Assuming File.js has been updated
+const FileTab = require('./FileTab'); // Assuming File.js has been updated
 
 class Branch {
 
@@ -10,20 +10,24 @@ class Branch {
      */
     constructor(name) {
         this.name = name;
-        this.files = [];
+        this.fileTabs = [];
         this.stashHash = null;
     }
 
     /**
      * Tracks file in branch recording for later
-     * @param {File} file 
+     * @param {FileTab} fileTab 
      */
-    addFile(file) {
-        this.files.push(file);
+    addFileTab(fileTab) {
+        this.fileTabs.push(fileTab);
     }
 
-    removeFile(filePath) {
-        this.files = this.files.filter(file => file.path !== filePath);
+    /**
+     * 
+     * @param {string} fileTabPath 
+     */
+    removeFileTab(fileTabPath) {
+        this.fileTabs = this.fileTabs.filter(fileTab => fileTab.path !== fileTabPath);
     }
 
     /**
@@ -35,7 +39,9 @@ class Branch {
         const data = {
             name: this.name,
             // Convert File instances to plain objects for storage (reused later)
-            files: this.files.map(file => file.toObject()),
+            fileTabs: this.fileTabs.map(file => {
+                return file.toObject();
+            }),
         };
         await fs.writeFile(filePath, JSON.stringify(data, null, 2));
     }
@@ -50,7 +56,7 @@ class Branch {
         const filePath = path.join(storageDir, `${name}.json`);
         const data = JSON.parse(await fs.readFile(filePath, 'utf8'));
         const branch = new Branch(data.name);
-        branch.files = data.files.map(File.fromObject); // Convert plain objects back into File instances
+        branch.fileTabs = data.fileTabs.map(FileTab.fromObject); // Convert plain objects back into File instances
         return branch;
     }
 }
