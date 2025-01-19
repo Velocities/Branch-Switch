@@ -60,12 +60,15 @@ class TabManager {
     /**
      * Saves state of branch to persistent storage location.
      * @param {string} branchName 
+     * @returns {Promise} This is the Promise for actually saving the branch at a time that's convenient for the caller
      */
     async saveState(branchName) {
         let openTabs = this.getOpenTabs();
         await this.flagNonTextDocs(openTabs);
         const fileTabs = openTabs.map(tab => new FileTab(tab.path, tab.cursorPosition, tab.isTextDoc, tab.pinned));
-        await this.repository.saveBranch(branchName, fileTabs);
+
+        // Save the branch asynchronously
+        return this.repository.saveBranch(branchName, fileTabs);
     }
 
     /**
@@ -105,9 +108,21 @@ class TabManager {
      * @param {string} newBranchName Name of the branch we're switching to
      */
     async handleBranchChange(newBranchName) {
-        await this.saveState(this.currentBranch);
+        // Note: saveState and restoreState run concurrently. Ensure that any modifications
+        // to saveBranch or related methods consider potential race conditions, especially 
+        // if these methods are expanded to include operations that could conflict.
+
+        // Save state of the current branch IN MEMORY while starting to restore the new one
+        const saveStatePromise = this.saveState(this.currentBranch);
+    
+        // Change the current branch immediately
         this.currentBranch = newBranchName;
+    
+        // Restore state of the new branch first (user wants to see their required content ASAP)
         await this.restoreState(newBranchName);
+    
+        // Ensure that saveState completes, but this happens concurrently with restoreState
+        await saveStatePromise;
     }
 }
 
