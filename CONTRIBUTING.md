@@ -42,6 +42,21 @@ npm install
 5. Start the development environment: Open the repository in Visual Studio Code and press F5 to launch a new instance for testing.
 
 ## Submitting Changes
+**Important Note:** Any changes made to the codebase could require some corresponding updates
+to the diagrams that model the code.
+Here are the links to all architectural diagrams we have thus far:
+https://drive.google.com/file/d/1eLl9xmKG6E2N0VYsP-N_hpFWxrJzJ0Wz/view?usp=sharing
+
+Any changes made to these diagrams should be completed as follows:
+1. Make a copy of the diagram
+  - You can do this by uploading the `.xml` file of the diagram you want to change
+  into drawio for your own copy to modify
+2. Make necessary changes to the diagram
+3. Download diagram as xml
+4. Copy and paste downloaded xml file into git-tracked file for this repo
+5. Stage changes and commit (as per other changes to this repo)
+
+Here is how you can make saves to the repo for your progress:
 1. Branch Workflow
 - Always create a feature branch off of development:
 
