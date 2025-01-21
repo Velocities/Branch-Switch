@@ -76,6 +76,14 @@ class TabManager {
      * @param {string} branchName 
      */
     async restoreState(branchName) {
+        // Unpin all pinned tabs before closing them to avoid potential exceptions being thrown
+        const openTabs = vscode.window.tabGroups.all.flatMap(group => group.tabs);
+        for (const tab of openTabs) {
+            if (tab.isPinned) {
+                await vscode.commands.executeCommand('workbench.action.unpinEditor', tab.input.uri);
+            }
+        }
+
         // Close current tabs
         await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 
@@ -97,6 +105,12 @@ class TabManager {
               // Close the preview and reopen in non-preview mode to prevent italicization
               vscode.commands.executeCommand('workbench.action.keepEditor');
             });
+          }
+          // Pin the tab if it was previously pinned
+          // Note for devs: we put this pinEditor code here because we expect it
+          // to be the same for both text files AND non-text files
+          if (file.pinned) {
+            vscode.commands.executeCommand('workbench.action.pinEditor');
           }
         }
     }
