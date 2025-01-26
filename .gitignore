@@ -1,3 +1,4 @@
 src/node_modules/*
 src/.vscode
+src/.vscode-test
 *.vsix
