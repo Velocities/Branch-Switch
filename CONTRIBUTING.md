@@ -43,9 +43,12 @@ npm install
 
 ## Submitting Changes
 **Important Note:** Any changes made to the codebase could require some corresponding updates
-to the diagrams that model the code.
-Here are the links to all architectural diagrams we have thus far:
+to the diagrams that model the code. Some of these diagrams may be incomplete or lacking in
+particular detail due to the many layers to this project, but further refinement of those
+diagrams is completely welcomed by all developers on the project.
+Here are the links to all design diagrams we have thus far:
 https://drive.google.com/file/d/1eLl9xmKG6E2N0VYsP-N_hpFWxrJzJ0Wz/view?usp=sharing
+https://drive.google.com/file/d/1MDWtVwGP-VfffS_LxAQC0PaNh5RlglF6/view?usp=sharing
 
 Any changes made to these diagrams should be completed as follows:
 1. Make a copy of the diagram
