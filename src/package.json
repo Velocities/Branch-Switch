@@ -15,7 +15,8 @@
     ],
     "main": "./extension.js",
     "scripts": {
-        "test": "vscode-test"
+        "test": "vscode-test",
+        "test:integration": "cd test/integration && vscode-test"
     },
     "contributes": {
         "commands": [
