@@ -1,9 +1,16 @@
+const Repository = require("./Repository");
 const FileTab = require('./FileTab');
 const vscode = require('vscode');
 
 class TabManager {
-    constructor(repository) {
+    /**
+     * 
+     * @param {Repository} repository 
+     * @param {*} vscodeGitAPI 
+     */
+    constructor(repository, vscodeGitAPI) {
         this.repository = repository; // Instance of Repository
+        this.vscodeGitAPI = vscodeGitAPI;
         this.currentBranch = null; // The current branch name
     }
 
@@ -125,6 +132,7 @@ class TabManager {
         // Note: saveState and restoreState run concurrently. Ensure that any modifications
         // to saveBranch or related methods consider potential race conditions, especially 
         // if these methods are expanded to include operations that could conflict.
+        const currentGitRepository = this.vscodeGitAPI.repositories[0];
 
         // Save state of the current branch IN MEMORY while starting to restore the new one
         const saveStatePromise = this.saveState(this.currentBranch);
@@ -134,9 +142,54 @@ class TabManager {
     
         // Restore state of the new branch first (user wants to see their required content ASAP)
         await this.restoreState(newBranchName);
+
+        // Pop the stash for that branch (if one exists)
+        await this.repository.popStashIfExists(currentGitRepository.rootUri.fsPath, newBranchName);
     
         // Ensure that saveState completes, but this happens concurrently with restoreState
         await saveStatePromise;
+    }
+
+    /**
+     * 
+     * @param {string} targetBranchName Name of the git branch we want to switch to
+     * @returns 
+     */
+    async switchBranchWithStash(targetBranchName) {
+      const currentGitRepository = this.vscodeGitAPI.repositories[0];
+
+      // We only have to switch branches (the FileTab state is all automatic from our Observer pattern)
+      // Ensure there are no unresolved merge conflicts
+      if ( currentGitRepository?.state.mergeChanges.length > 0 ) {
+        vscode.window.showErrorMessage("Cannot switch branches with unresolved merge conflicts.");
+        return;
+      }
+
+      try {
+        //console.log(Object.keys(currentGitRepository));
+
+        // Stash changes in git before switching
+        const stashHash = await this.repository.stageAndStashChanges(currentGitRepository.rootUri.fsPath);
+
+        // null check (in case the stash failed)
+        if ( !stashHash) {
+          throw new Error('stageAndStashChanges was unsuccessful (stashHash === null).');
+        }
+
+        // Save stashHash to the current branch
+        const branchObj = await this.repository.getBranch(this.currentBranch);
+        if ( branchObj ) {
+          branchObj.stashHash = stashHash;
+          // Save new info to persistent storage now
+          await this.saveState(targetBranchName);
+        }
+
+        // Switch branch (handleBranchChange is called automatically)
+        await this.repository.checkoutBranch(currentGitRepository.rootUri.fsPath, targetBranchName);
+        vscode.window.showInformationMessage(`Switched to ${targetBranchName} (stash ${stashHash} saved)`);
+      } catch (error) {
+        vscode.window.showErrorMessage(`Failed to switch branches: ${error.message}`);
+      }
     }
 }
 

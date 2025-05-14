@@ -1,7 +1,18 @@
 const Branch = require('./Branch');
 const path = require('path');
 const fs = require('fs/promises');
+const vscode = require('vscode');
 
+
+const { exec } = require('child_process');
+const { promisify } = require('util');
+
+const execAsync = promisify(exec);
+
+/**
+ * This class deals with all git repo-related commands, both for this extension and git commands
+ * that we can't call using the git extension API.
+ */
 class Repository {
     constructor(storageDir) {
         // Type should be a string
@@ -11,7 +22,7 @@ class Repository {
     }
 
     /**
-     * 
+     * Gets the {@link Branch} object for the requested name string
      * @param {string} name 
      * @returns {Branch}
      */
@@ -43,6 +54,83 @@ class Repository {
     async saveAllBranches() {
         for (const branch of this.branches.values()) {
             await branch.save(this.storageDir);
+        }
+    }
+
+    /**
+     * 
+     * @param {string} repoPath File system location of the repo
+     * @param {string} targetBranchName Name of the branch to pop the stash on (should be the current branch)
+     */
+    async popStashIfExists(repoPath, targetBranchName) {
+        const targetBranch = await this.getBranch(targetBranchName);
+
+        if ( targetBranch.stashHash ) {
+            try {
+                const { stdout } = await execAsync(`git stash pop ${targetBranch.stashHash}`, { cwd: repoPath });
+
+                vscode.window.showInformationMessage(`Successfully popped stash ${targetBranch.stashHash} for branch ${targetBranchName}`);
+            } catch (err) {
+                // User might have accidentally popped the stash themselves or cleared
+                // their git stash list for the repo at some point
+                vscode.window.showErrorMessage(`Failed to pop stash ${err.message} for branch ${targetBranchName}`);
+            }
+
+            // Get rid of the stash hash information for that branch (so we won't pop it again)
+            targetBranch.stashHash = null
+        } else {
+            vscode.window.showInformationMessage(`No stash hash for branch ${targetBranchName}`)
+        }
+    }
+
+    /**
+     * Equivalent to `git stash push`
+     * @param {string} repoPath File system location of the repo
+     * @param {boolean} [includeUntracked=true] Whether or not the untracked files should also be staged
+     * @returns Stash hash if successful, returned as a string in the Promise
+     */
+    async stageAndStashChanges(repoPath, includeUntracked = true) {
+        try {
+            // Stage all unstaged files and push to stash list in git
+            const stashCmd = includeUntracked
+                ? 'git stash push --include-untracked -m "vscode-temp-stash"'
+                : 'git add . && git stash push -m "vscode-temp-stash"';
+
+            await execAsync(stashCmd, { cwd: repoPath });
+
+            // Get the most recent stash entry (assuming this is the one we just created)
+            const { stdout } = await execAsync('git stash list --pretty="%H %gd %s"', { cwd: repoPath });
+
+            // Find the stash with the matching message
+            const lines = stdout.trim().split('\n');
+            const match = lines.find(line => line.includes('vscode-temp-stash'));
+
+            if (match) {
+                const [hash, stashRef, ...messageParts] = match.split(' ');
+                return stashRef; // like "stash@{0}" — usable with git stash pop/apply
+            } else {
+                throw new Error('Could not find the stash entry.');
+            }
+        } catch (err) {
+            vscode.window.showErrorMessage(`Failed to stash: ${err.message}`);
+            return null;
+        }
+    }
+
+    /**
+     * Equivalent to `git checkout`
+     * @param {string} repoPath File system location of the repo
+     * @param {string} branchName 
+     * @returns boolean indicating success or failure
+     */
+    async checkoutBranch(repoPath, branchName) {
+        try {
+            const { stdout } = await execAsync(`git checkout ${branchName}`, { cwd: repoPath });
+            
+            return true;
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to checkout branch "${branchName}": ${error.message}`);
+            return false;
         }
     }
 

@@ -8,10 +8,10 @@ class Branch {
      * 
      * @param {string} name Name of branch for the repository in use
      */
-    constructor(name) {
+    constructor(name, stashHash = null) {
         this.name = name;
         this.fileTabs = [];
-        this.stashHash = null;
+        this.stashHash = stashHash;
     }
 
     /**
@@ -31,7 +31,7 @@ class Branch {
     }
 
     /**
-     * Save branch to file
+     * Save info about this branch to our saved file for this extension
      * @param {string} storageDir 
      */
     async save(storageDir) {
@@ -42,12 +42,13 @@ class Branch {
             fileTabs: this.fileTabs.map(file => {
                 return file.toObject();
             }),
+            stashHash: this.stashHash
         };
         await fs.writeFile(filePath, JSON.stringify(data, null, 2));
     }
 
     /**
-     * Load branch from file
+     * Load info about this branch from our saved file for this extension
      * @param {string} storageDir Directory that contains the file
      * @param {string} name Name of file
      * @returns {Branch} Branch object for data at file (based on storageDir and name)
@@ -55,8 +56,9 @@ class Branch {
     static async load(storageDir, name) {
         const filePath = path.join(storageDir, `${name}.json`);
         const data = JSON.parse(await fs.readFile(filePath, 'utf8'));
-        const branch = new Branch(data.name);
-        branch.fileTabs = data.fileTabs.map(FileTab.fromObject); // Convert plain objects back into File instances
+        const branch = new Branch(data.name, data.stashHash);
+        // Convert plain objects back into File instances
+        branch.fileTabs = data.fileTabs.map(FileTab.fromObject);
         return branch;
     }
 }

@@ -26,6 +26,10 @@
             {
                 "command": "branchSwitch.restoreTabs",
                 "title": "Restore Tabs for Current Branch"
+            },
+            {
+                "command": "branchSwitch.switchBranchWithStash",
+                "title": "Switch Branch (with Stash)"
             }
         ],
         "configuration": {
