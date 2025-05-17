@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import FileTab from './FileTab';
 
 const execAsync = promisify(exec);
 
@@ -12,16 +13,22 @@ const execAsync = promisify(exec);
  * that we can't call using the git extension API.
  */
 export default class Repository {
+    private repoFilePath: string;
+    // This is our custom folder that contains our extension's custom files
+    // (we use this for reading and writing info about FileTabs for the repo)
     private storageDir: string;
     private branches: Map<string, Branch>;
 
-    constructor(storageDir: string) {
+    constructor(storageDir: string, repoFilePath: string) {
         this.storageDir = storageDir;
+        this.repoFilePath = repoFilePath;
         this.branches = new Map<string, Branch>();
     }
 
     /**
      * Gets the {@link Branch} object for the requested name string
+     * @param name Name of the target branch to retrieve
+     * @returns Promise object to retrieve the corresponding {@link Branch}
      */
     async getBranch(name: string): Promise<Branch> {
         if (!this.branches.has(name)) {
@@ -33,13 +40,19 @@ export default class Repository {
 
     /**
      * Save information about {@link Branch} to persistent storage.
+     * @param name Name of the {@link Branch} object to be saved.
+     * @param fileTabs The open {@link FileTab} objects to be saved.
+     * @returns Promise object to save {@link Branch} to persistent storage (only needs to be executed upon call to await).
      */
-    async saveBranch(name: string, fileTabs: any[]): Promise<void> {
+    async saveBranch(name: string, fileTabs: FileTab[]): Promise<void> {
         const branch = await this.getBranch(name);
         branch.fileTabs = fileTabs;
         await branch.save(this.storageDir);
     }
 
+    /**
+     * @returns A Promise object to save all {@link Branch} objects for this Repository.
+     */
     async saveAllBranches(): Promise<void> {
         for (const branch of this.branches.values()) {
             await branch.save(this.storageDir);
@@ -48,13 +61,15 @@ export default class Repository {
 
     /**
      * Pop a git stash if it exists for a given branch.
+     * @param targetBranchName Name of the branch to pop the related stash
+     * @returns A Promise object to pop a git stash for a given {@link Branch} object
      */
-    async popStashIfExists(repoPath: string, targetBranchName: string): Promise<void> {
+    async popStashIfExists(targetBranchName: string): Promise<void> {
         const targetBranch = await this.getBranch(targetBranchName);
 
         if (targetBranch.stashHash) {
             try {
-                const { stdout } = await execAsync(`git stash pop ${targetBranch.stashHash}`, { cwd: repoPath });
+                const { stdout } = await execAsync(`git stash pop ${targetBranch.stashHash}`, { cwd: this.repoFilePath });
                 vscode.window.showInformationMessage(`Successfully popped stash ${targetBranch.stashHash} for branch ${targetBranchName}`);
             } catch (err: any) {
                 vscode.window.showErrorMessage(`Failed to pop stash ${err.message} for branch ${targetBranchName}`);
@@ -68,16 +83,19 @@ export default class Repository {
 
     /**
      * Equivalent to `git stash push`
+     * @param includeUntracked Whether to add untracked files to stash or not (true by default)
+     * @returns Promise object with command-line code to execute git stage and stash calls,
+     * then return potential output or null
      */
-    async stageAndStashChanges(repoPath: string, includeUntracked: boolean = true): Promise<string | null> {
+    async stageAndStashChanges(includeUntracked: boolean = true): Promise<string | null> {
         try {
             const stashCmd = includeUntracked
                 ? 'git stash push --include-untracked -m "vscode-temp-stash"'
                 : 'git add . && git stash push -m "vscode-temp-stash"';
 
-            await execAsync(stashCmd, { cwd: repoPath });
+            await execAsync(stashCmd, { cwd: this.repoFilePath });
 
-            const { stdout } = await execAsync('git stash list --pretty="%H %gd %s"', { cwd: repoPath });
+            const { stdout } = await execAsync('git stash list --pretty="%H %gd %s"', { cwd: this.repoFilePath });
             const lines = stdout.trim().split('\n');
             const match = lines.find(line => line.includes('vscode-temp-stash'));
 
@@ -96,9 +114,9 @@ export default class Repository {
     /**
      * Equivalent to `git checkout`
      */
-    async checkoutBranch(repoPath: string, branchName: string): Promise<boolean> {
+    async checkoutBranch(branchName: string): Promise<boolean> {
         try {
-            const { stdout } = await execAsync(`git checkout ${branchName}`, { cwd: repoPath });
+            const { stdout } = await execAsync(`git checkout ${branchName}`, { cwd: this.repoFilePath });
             return true;
         } catch (error: any) {
             vscode.window.showErrorMessage(`Failed to checkout branch "${branchName}": ${error.message}`);

@@ -18,7 +18,7 @@ let tabManager: TabManager | null = null;
 export async function activate(context: vscode.ExtensionContext) {
   console.log("Branch Switch extension is now active!");
 
-  if (!context.storageUri) {
+  if ( !context.storageUri ) {
     console.error("Workspace storage is unavailable.");
     return;
   }
@@ -26,13 +26,10 @@ export async function activate(context: vscode.ExtensionContext) {
   const storageDir = context.storageUri.fsPath;
   console.log(`storageDir grabbed from context: ${storageDir}`);
 
-  if (!fs.existsSync(storageDir)) {
+  if ( !fs.existsSync(storageDir) ) {
     console.log("Making storageDir exist...");
     fs.mkdirSync(storageDir, { recursive: true });
   }
-
-  repository = new Repository(storageDir);
-  await repository.loadRepositoryMetadata();
 
   const gitExtension = vscode.extensions.getExtension("vscode.git");
   if (!gitExtension) {
@@ -40,25 +37,31 @@ export async function activate(context: vscode.ExtensionContext) {
     return;
   }
 
+  // We need this extension for our extension to function
   await gitExtension.activate();
 
   // The type of gitExtension.exports can vary depending on the Git extension version,
   // so you might want to define a proper interface or import types from 'vscode.git'
   const gitAPI = gitExtension.exports.getAPI(1);
 
-  tabManager = new TabManager(repository, gitAPI);
 
-  const intervalId = setInterval(() => {
+  // Set event listener to handleBranchChange when a branch change is detected by gitExtension
+  const intervalId = setInterval(async () => {
     if (gitAPI.repositories.length > 0) {
       clearInterval(intervalId);
+      const currentGitRepository = gitAPI.repositories[0];
+      repository = new Repository(storageDir, currentGitRepository.rootUri.fsPath);
+      await repository.loadRepositoryMetadata();
 
-      const repo = gitAPI.repositories[0];
-      tabManager!.currentBranch = repo.state.HEAD?.name;
+      // tabManager obviously isn't null onward from this point (it's okay to use ! notation in the rest of this activate block)
+      tabManager = new TabManager(repository, gitAPI, currentGitRepository.state.HEAD?.name);
 
       gitAPI.repositories.forEach((repo: any) => {
         repo.state.onDidChange(async () => {
           const branchName = repo.state.HEAD?.name || "unknown";
-          if (tabManager!.currentBranch !== branchName) {
+          
+          if ( tabManager!.getCurrentBranch() !== branchName ) {
+            // Branch changed in git; trigger a handler call
             await tabManager!.handleBranchChange(branchName);
           }
         });
