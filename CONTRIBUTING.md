@@ -39,7 +39,8 @@ git remote add upstream https://github.com/Velocities/Branch-Switch.git
 npm install
 ```
 
-5. Start the development environment: Open the repository in Visual Studio Code and press F5 to launch a new instance for testing.
+5. Start the development environment:
+Open the repository in Visual Studio Code, compile the TypeScript by typing `tsc` in the root directory of the repo, and press F5 to launch a new instance for testing.
 
 ## Submitting Changes
 **Important Note:** Any changes made to the codebase could require some corresponding updates

@@ -6,16 +6,17 @@
     "version": "1.2.0",
     "publisher": "Velocities",
     "engines": {
-        "vscode": "^1.78.0"
+        "vscode": "^1.100.0"
     },
     "activationEvents": [
         "onStartupFinished",
         "onCommand:branchSwitch.saveTabs",
         "onCommand:branchSwitch.restoreTabs"
     ],
-    "main": "./extension.js",
+    "main": "./out/extension.js",
     "scripts": {
-        "test": "vscode-test"
+        "test": "vscode-test",
+        "vscode:prepublish": "tsc -p ./"
     },
     "contributes": {
         "commands": [
@@ -26,6 +27,10 @@
             {
                 "command": "branchSwitch.restoreTabs",
                 "title": "Restore Tabs for Current Branch"
+            },
+            {
+                "command": "branchSwitch.switchBranchWithStash",
+                "title": "Switch Branch (with Stash)"
             }
         ],
         "configuration": {
@@ -41,7 +46,14 @@
         }
     },
     "devDependencies": {
+        "@eslint/js": "^9.26.0",
+        "@types/mocha": "^10.0.10",
+        "@types/node": "^22.15.18",
+        "@types/vscode": "^1.100.0",
         "@vscode/test-cli": "^0.0.10",
-        "@vscode/test-electron": "^2.4.1"
+        "@vscode/test-electron": "^2.4.1",
+        "eslint": "^9.26.0",
+        "typescript": "^5.8.3",
+        "typescript-eslint": "^8.32.1"
     }
 }
